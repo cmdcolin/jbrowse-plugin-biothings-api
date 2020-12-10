@@ -1,9 +1,7 @@
 /* eslint-disable @typescript-eslint/camelcase */
-import AdapterType from '@jbrowse/core/pluggableElementTypes/AdapterType'
 import PluginManager from '@jbrowse/core/PluginManager'
 import Plugin from '@jbrowse/core/Plugin'
 import {
-  BaseFeatureDataAdapter,
   BaseOptions,
 } from '@jbrowse/core/data_adapters/BaseAdapter'
 import { Region } from '@jbrowse/core/util/types'
@@ -129,10 +127,13 @@ export function cdsStartEndProcessor(feature: any) {
   })
   return { ...feature, subfeatures: newChildren, type: 'mRNA' }
 }
-
+function getAdapterClass(pluginManager:PluginManager) {
+  const {jbrequire} = pluginManager
+  const BaseFeatureDataAdapter = jbrequire('@jbrowse/core/data_adapters/BaseAdapter')
+    console.log(BaseFeatureDataAdapter)
 // random notes for possible email to team: cdk11a/cdk11b return pretty bad data
 // for their transcripts, so they are filtered out
-class AdapterClass extends BaseFeatureDataAdapter {
+return class AdapterClass extends BaseFeatureDataAdapter {
   private featureCache = new AbortablePromiseCache({
     cache: new QuickLRU({ maxSize: 100 }),
     fill: async args => {
@@ -340,18 +341,23 @@ class AdapterClass extends BaseFeatureDataAdapter {
 
   public freeResources(/* { region } */) {}
 }
+}
 
 export default class extends Plugin {
   name = 'MyGeneAdapter'
 
   install(pluginManager: PluginManager) {
+    const {jbrequire} = pluginManager
+    const AdapterType = jbrequire('@jbrowse/core/pluggableElementTypes/AdapterType')
+    const AdapterClass = getAdapterClass(pluginManager)
     pluginManager.addAdapterType(
-      () =>
-        new AdapterType({
+      () => {
+        return new AdapterType({
           name: 'MyGeneV3Adapter',
           configSchema,
           AdapterClass,
-        }),
+        })
+      }
     )
   }
 }

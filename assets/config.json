@@ -5,7 +5,7 @@
   "plugins": [
     {
       "name": "Biothings",
-      "url": "http://localhost:9001/plugin.js"
+      "url": "http://localhost:9000/plugin.js"
     }
   ],
   "assemblies": [
@@ -32,7 +32,7 @@
         "adapter": {
           "type": "RefNameAliasAdapter",
           "location": {
-            "uri": "hg19_aliases.txt"
+            "uri": "https://s3.amazonaws.com/jbrowse.org/genomes/hg19/hg19_aliases.txt"
           }
         }
       }
