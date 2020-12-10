@@ -14,7 +14,7 @@
   "files": [
     "dist"
   ],
-  "author": "Andrew Duncan",
+  "author": "JBrowse Team",
   "license": "MIT",
   "dependencies": {
     "@jbrowse/core": "^1.0.2",
