@@ -1,9 +1,7 @@
 /* eslint-disable @typescript-eslint/camelcase */
 import PluginManager from '@jbrowse/core/PluginManager'
 import Plugin from '@jbrowse/core/Plugin'
-import {
-  BaseOptions,
-} from '@jbrowse/core/data_adapters/BaseAdapter'
+import { BaseOptions } from '@jbrowse/core/data_adapters/BaseAdapter'
 import { Region } from '@jbrowse/core/util/types'
 import { ObservableCreate } from '@jbrowse/core/util/rxjs'
 import SimpleFeature, { Feature } from '@jbrowse/core/util/simpleFeature'
@@ -128,9 +126,11 @@ export function cdsStartEndProcessor(feature: any) {
   return { ...feature, subfeatures: newChildren, type: 'mRNA' }
 }
 
-function getAdapterClass(pluginManager:PluginManager) {
-  const {jbrequire} = pluginManager
-  const {BaseFeatureDataAdapter} = jbrequire('@jbrowse/core/data_adapters/BaseAdapter')
+function getAdapterClass(pluginManager: PluginManager) {
+  const { jbrequire } = pluginManager
+  const { BaseFeatureDataAdapter } = jbrequire(
+    '@jbrowse/core/data_adapters/BaseAdapter',
+  )
   // random notes for possible email to team: cdk11a/cdk11b return pretty bad data
   // for their transcripts, so they are filtered out
   return class AdapterClass extends BaseFeatureDataAdapter {
@@ -347,17 +347,17 @@ export default class extends Plugin {
   name = 'MyGeneAdapter'
 
   install(pluginManager: PluginManager) {
-    const {jbrequire} = pluginManager
-    const AdapterType = jbrequire('@jbrowse/core/pluggableElementTypes/AdapterType')
-    const AdapterClass = getAdapterClass(pluginManager)
-    pluginManager.addAdapterType(
-      () => {
-        return new AdapterType({
-          name: 'MyGeneV3Adapter',
-          configSchema,
-          AdapterClass,
-        })
-      }
+    const { jbrequire } = pluginManager
+    const AdapterType = jbrequire(
+      '@jbrowse/core/pluggableElementTypes/AdapterType',
     )
+    const AdapterClass = getAdapterClass(pluginManager)
+    pluginManager.addAdapterType(() => {
+      return new AdapterType({
+        name: 'MyGeneV3Adapter',
+        configSchema,
+        AdapterClass,
+      })
+    })
   }
 }
