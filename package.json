@@ -13,11 +13,14 @@
   "module": "dist/jbrowse-plugin-biothings.esm.js",
   "typings": "dist/index.d.ts",
   "scripts": {
+    "clean": "rimraf dist",
     "start": "tsdx watch --verbose --noClean --format umd --name JBrowsePluginBiothings --onFirstSuccess \"yarn serve --cors --listen 9000 .\"",
+    "prebuild": "npm run clean",
     "build": "tsdx build --format cjs,esm,umd --name JBrowsePluginBiothings",
     "test": "tsdx test",
     "lint": "tsdx lint",
     "prepublishOnly": "yarn test",
+    "prepare": "npm run build",
     "postinstall": "jbrowse-plugin-postinstall",
     "postversion": "git push --follow-tags"
   },
@@ -49,6 +52,7 @@
     "mobx-react": "^6.0.0",
     "mobx-state-tree": "3.14.1",
     "react": "^16.8.0",
+    "rimraf": "^3.0.2",
     "rxjs": "^6.0.0",
     "serve": "^11.3.2",
     "tslib": "^2.0.3",
