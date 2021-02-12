@@ -35,7 +35,7 @@ http://localhost:3000/?config=http://localhost:9000/jbrowse_config_biothings.jso
 
 #### Demo
 
-https://s3.amazonaws.com/jbrowse.org/code/jb2/master/index.html?config=https://unpkg.com/jbrowse-plugin-biothings/dist/config.json
+https://s3.amazonaws.com/jbrowse.org/code/jb2/master/index.html?config=https%3A%2F%2Funpkg.com%2Fjbrowse-plugin-biothings%2Fdist%2Fconfig.json&session=share-AFbXiVTg5n&password=9hshE
 
 #### Production
 
