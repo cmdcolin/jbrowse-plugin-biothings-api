@@ -33,6 +33,10 @@ Then open JBrowse Web to (assuming it is running on port 3000):
 
 http://localhost:3000/?config=http://localhost:9000/jbrowse_config_biothings.json
 
+#### Demo
+
+https://s3.amazonaws.com/jbrowse.org/code/jb2/master/index.html?config=https://unpkg.com/jbrowse-plugin-biothings/dist/config.json
+
 #### Production
 
 Add to the "plugins" of your JBrowse Web config:
