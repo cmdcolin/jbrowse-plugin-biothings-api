@@ -16,7 +16,7 @@
     "clean": "rimraf dist",
     "start": "tsdx watch --verbose --noClean --format umd --name JBrowsePluginBiothings --onFirstSuccess \"yarn serve --cors --listen 9000 .\"",
     "prebuild": "npm run clean",
-    "build": "tsdx build --format cjs,esm,umd --name JBrowsePluginBiothings",
+    "build": "tsdx build --format cjs,esm,umd --name JBrowsePluginBiothings && cp distconfig.json dist/config.json",
     "test": "tsdx test",
     "lint": "tsdx lint",
     "prepublishOnly": "yarn test",

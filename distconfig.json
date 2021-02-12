@@ -1,0 +1,8 @@
+{
+  "plugins": [
+    {
+      "name": "Biothings",
+      "url": "https://unpkg.com/jbrowse-plugin-biothings/dist/jbrowse-plugin-biothings.umd.production.min.js"
+    }
+  ]
+}
