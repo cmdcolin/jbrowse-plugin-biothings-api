@@ -12,6 +12,7 @@ import {
   ConfigurationSchema,
 } from '@jbrowse/core/configuration'
 import { AnyConfigurationModel } from '@jbrowse/core/configuration/configurationSchema'
+import { version } from '../package.json'
 
 const configSchema = ConfigurationSchema(
   'MyGeneV3Adapter',
@@ -131,8 +132,8 @@ function getAdapterClass(pluginManager: PluginManager) {
   const { BaseFeatureDataAdapter } = jbrequire(
     '@jbrowse/core/data_adapters/BaseAdapter',
   )
-  // random notes for possible email to team: cdk11a/cdk11b return pretty bad data
-  // for their transcripts, so they are filtered out
+  // random notes for possible email to team: cdk11a/cdk11b return pretty bad
+  // data for their transcripts, so they are filtered out
   return class AdapterClass extends BaseFeatureDataAdapter {
     private featureCache = new AbortablePromiseCache({
       cache: new QuickLRU({ maxSize: 100 }),
@@ -345,6 +346,7 @@ function getAdapterClass(pluginManager: PluginManager) {
 
 export default class extends Plugin {
   name = 'MyGeneAdapter'
+  version = version
 
   install(pluginManager: PluginManager) {
     const { jbrequire } = pluginManager
