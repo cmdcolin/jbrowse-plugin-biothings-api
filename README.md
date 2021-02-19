@@ -44,7 +44,7 @@ Add to the "plugins" of your JBrowse Web config:
   "plugins": [
     {
       "name": "Biothings",
-      "url": "https://ghcdn.rawgit.org/cmdcolin/jbrowse-plugin-biothings-api/master/rawgit/jbrowse-plugin-biothings.umd.production.min.js"
+      "url": "https://unpkg.com/jbrowse-plugin-biothings/dist/jbrowse-plugin-biothings.umd.production.min.js"
     }
   ]
 }
