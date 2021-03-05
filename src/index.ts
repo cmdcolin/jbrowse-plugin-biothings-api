@@ -288,6 +288,7 @@ function getAdapterClass(pluginManager: PluginManager) {
                 strand: transcript.strand,
                 thickStart: transcript.cdsstart,
                 thickEnd: transcript.cdsend,
+                refName: genomicPos.chr,
                 // @ts-ignore
                 subfeatures: transcript.position.map(pos => ({
                   start: pos[0],
