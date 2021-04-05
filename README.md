@@ -26,6 +26,12 @@ Add to the "plugins" of your JBrowse Web config:
 
 You can download that JS file and re-host it if you want to avoid a CDN
 
+
+## Modifying the codebase or using in @jbrowse/react-linear-genome-view
+
+See [DEVELOPERS.md](DEVELOPERS.md)
+
+
 ## Screenshot
 
 ![](img/1.png)
