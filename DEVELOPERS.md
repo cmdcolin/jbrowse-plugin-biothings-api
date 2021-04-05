@@ -20,7 +20,18 @@ http://localhost:3000/?config=http://localhost:9000/jbrowse_config_biothings.jso
 
 
 
-### In [`@jbrowse/react-linear-genome-view`](https://www.npmjs.com/package/@jbrowse/react-linear-genome-view)
+### Using in @jbrowse/react-linear-genome-view
+
+
+
+For use in [`@jbrowse/react-linear-view`](https://www.npmjs.com/package/@jbrowse/react-linear-genome-view)
+
+```
+yarn add @gmod/jbrowse-plugin-biothings
+```
+
+And then you can import the module directly using ES6 imports
+
 
 ```tsx
 import React from 'react'
