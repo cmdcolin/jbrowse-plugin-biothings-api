@@ -19,9 +19,7 @@ const configSchema = ConfigurationSchema(
   {
     baseUrl: {
       type: 'string',
-      defaultValue:
-        // eslint-disable-next-line no-template-curly-in-string
-        'https://mygene.info/v3/query?q=${ref}:${start}-${end}&size=1000&fields=all&size=1000&species=human',
+      defaultValue: '',
     },
   },
   { explicitlyTyped: true },
@@ -137,7 +135,7 @@ function getAdapterClass(pluginManager: PluginManager) {
   return class AdapterClass extends BaseFeatureDataAdapter {
     private featureCache = new AbortablePromiseCache({
       cache: new QuickLRU({ maxSize: 100 }),
-      fill: async args => {
+      fill: async (args) => {
         // @ts-ignore
         return this.readChunk(args)
       },
@@ -156,7 +154,7 @@ function getAdapterClass(pluginManager: PluginManager) {
 
     public getFeatures(query: Region, opts: BaseOptions = {}) {
       const baseUrl = readConfObject(this.config, 'baseUrl')
-      return ObservableCreate<Feature>(async observer => {
+      return ObservableCreate<Feature>(async (observer) => {
         const chunkSize = 100000
         const s = query.start - (query.start % chunkSize)
         const e = query.end + (chunkSize - (query.end % chunkSize))
@@ -171,23 +169,22 @@ function getAdapterClass(pluginManager: PluginManager) {
           })
         }
         await Promise.all(
-          // @ts-ignore
-          chunks.map(async chunk => {
-            const features = await this.featureCache.get(
-              `${chunk.assemblyName},${chunk.refName},${chunk.start},${chunk.end}`,
-              chunk,
-              opts.signal,
-            )
-            // @ts-ignore
-            features.forEach(feature => {
-              if (
-                feature &&
-                !(feature.get('start') > query.end) &&
-                feature.get('end') >= query.start
-              ) {
-                observer.next(feature)
-              }
-            })
+          chunks.map((chunk) => {
+            const key = `${chunk.assemblyName},${chunk.refName},${chunk.start},${chunk.end}`
+            const signal = opts.signal
+            return this.featureCache
+              .get(key, chunk, signal)
+              .then((features: Feature[]) =>
+                features.forEach((feature) => {
+                  if (
+                    feature &&
+                    !(feature.get('start') > query.end) &&
+                    feature.get('end') >= query.start
+                  ) {
+                    observer.next(feature)
+                  }
+                }),
+              )
           }),
         )
 
@@ -221,7 +218,7 @@ function getAdapterClass(pluginManager: PluginManager) {
       }
       const featureData = await response.json()
       // @ts-ignore
-      return featureData.hits.map(feature => {
+      return featureData.hits.map((feature) => {
         const {
           genomic_pos,
           genomic_pos_hg19,
@@ -235,7 +232,7 @@ function getAdapterClass(pluginManager: PluginManager) {
 
         let genomicPos = [genomic_pos, genomic_pos_hg19][hg19]
         if (Array.isArray(genomicPos)) {
-          genomicPos = genomicPos.find(pos => {
+          genomicPos = genomicPos.find((pos) => {
             return refName.replace('chr', '') === pos.chr
           })
         }
@@ -272,7 +269,7 @@ function getAdapterClass(pluginManager: PluginManager) {
 
         if (transcriptData) {
           // @ts-ignore
-          transcriptData = transcriptData.filter(transcript => {
+          transcriptData = transcriptData.filter((transcript) => {
             return feature.map_location?.startsWith(transcript.chr)
           })
         }
@@ -290,7 +287,7 @@ function getAdapterClass(pluginManager: PluginManager) {
                 thickEnd: transcript.cdsend,
                 refName: genomicPos.chr,
                 // @ts-ignore
-                subfeatures: transcript.position.map(pos => ({
+                subfeatures: transcript.position.map((pos) => ({
                   start: pos[0],
                   end: pos[1],
                   strand: transcript.strand,
@@ -299,7 +296,7 @@ function getAdapterClass(pluginManager: PluginManager) {
               }
             })
             // @ts-ignore
-            .filter(t => {
+            .filter((t) => {
               // another weird filter to avoid transcripts that are outside the
               // range of the genomic pos. the +/-1000 added for ATAD3C, SKI2, MEGF6
               return (
@@ -308,7 +305,7 @@ function getAdapterClass(pluginManager: PluginManager) {
               )
             })
             // @ts-ignore
-            .map(feat => {
+            .map((feat) => {
               return feature.type_of_gene === 'protein-coding'
                 ? cdsStartEndProcessor(feat)
                 : feat
@@ -319,9 +316,9 @@ function getAdapterClass(pluginManager: PluginManager) {
           // this is needed
           const [min, max] = [
             // @ts-ignore
-            Math.min(...[genomicPos.start, ...transcripts.map(t => t.start)]),
+            Math.min(...[genomicPos.start, ...transcripts.map((t) => t.start)]),
             // @ts-ignore
-            Math.max(...[genomicPos.end, ...transcripts.map(t => t.end)]),
+            Math.max(...[genomicPos.end, ...transcripts.map((t) => t.end)]),
           ]
 
           return new SimpleFeature({
