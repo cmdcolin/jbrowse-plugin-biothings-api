@@ -6,6 +6,7 @@ import {
 import format from 'string-template'
 import AdapterType from '@jbrowse/core/pluggableElementTypes/AdapterType'
 import { Region } from '@jbrowse/core/util/types'
+import { intersection2 } from '@jbrowse/core/util/range'
 import { ObservableCreate } from '@jbrowse/core/util/rxjs'
 import SimpleFeature, { Feature } from '@jbrowse/core/util/simpleFeature'
 import AbortablePromiseCache from 'abortable-promise-cache'
@@ -21,11 +22,12 @@ async function myfetch(url: string) {
   return response.json()
 }
 
-function processFeat(f: any) {
-  var start = +f._id.match(/chr.*:g.([0-9]+)/)[1]
-  var feature = new SimpleFeature({
+function processFeat(f: any, refName: string) {
+  const start = +f._id.match(/chr.*:g.([0-9]+)/)[1]
+  const feature = new SimpleFeature({
     id: f._id,
     data: {
+      refName,
       start: start - 1,
       end: start,
       id: f._id,
@@ -69,17 +71,17 @@ function processFeat(f: any) {
     }
     if (str.match(/dbnsfp/)) {
       if (data.fathmm) {
-        for (var i in data.fathmm.score) {
+        for (const i in data.fathmm.score) {
           if (data.fathmm.score[i] === null) data.fathmm.score[i] = ''
         }
       }
       if (data.provean) {
-        for (var j in data.provean.score) {
+        for (const j in data.provean.score) {
           if (data.provean.score[j] === null) data.provean.score[j] = ''
         }
       }
       if (data.sift) {
-        for (var k in data.sift.score) {
+        for (const k in data.sift.score) {
           if (data.sift.score[k] === null) data.sift.score[k] = ''
         }
       }
@@ -94,11 +96,11 @@ function processFeat(f: any) {
     }
     // @ts-ignore
     feature.data[str + '_attrs' + (plus || '')] = {}
-    var valkeys = Object.keys(data).filter((key) => {
+    const valkeys = Object.keys(data).filter((key) => {
       return typeof data[key] !== 'object'
     })
 
-    var objkeys = Object.keys(data).filter((key) => {
+    const objkeys = Object.keys(data).filter((key) => {
       return typeof data[key] === 'object' && key !== 'gene'
     })
 
@@ -144,6 +146,10 @@ export const configSchema = ConfigurationSchema(
       type: 'string',
       defaultValue: '',
     },
+    chunkSize: {
+      type: 'number',
+      defaultValue: 1000,
+    },
   },
   { explicitlyTyped: true },
 )
@@ -164,17 +170,18 @@ class AdapterClass extends BaseFeatureDataAdapter {
   public getFeatures(query: Region, opts: BaseOptions = {}) {
     const baseUrl = this.getConf('baseUrl')
     const queryQ = this.getConf('query')
+    const chunkSize = this.getConf('chunkSize')
+    const { start: qs, end: qe, refName, assemblyName } = query
     return ObservableCreate<Feature>(async (observer) => {
-      const chunkSize = 1000
-      const s = query.start - (query.start % chunkSize)
-      const e = query.end + (chunkSize - (query.end % chunkSize))
+      const s = qs - (qs % chunkSize)
+      const e = qe + (chunkSize - (qe % chunkSize))
       const chunks = []
       for (let start = s; start < e; start += chunkSize) {
         chunks.push({
-          refName: query.refName,
+          refName,
           start,
           end: start + chunkSize,
-          assemblyName: query.assemblyName,
+          assemblyName,
           baseUrl,
           query: queryQ,
         })
@@ -188,16 +195,10 @@ class AdapterClass extends BaseFeatureDataAdapter {
             chunk,
             signal,
           )) as Feature[]
-          console.log({ features })
-          features.forEach((feature) => {
-            if (
-              feature &&
-              !(feature.get('start') > query.end) &&
-              feature.get('end') >= query.start
-            ) {
-              observer.next(feature)
-            }
-          })
+          const ret = features.filter((f) =>
+            intersection2(f.get('start'), f.get('end'), qs, qe),
+          )
+          ret.forEach((f) => observer.next(f))
         }),
       )
 
@@ -215,23 +216,20 @@ class AdapterClass extends BaseFeatureDataAdapter {
     const { start, end, refName, baseUrl, query } = chunk
     const ref = refName.startsWith('chr') ? refName : `chr${refName}`
     const newBase = format(baseUrl + query, { ref, start, end })
-
-    //const hg19 = Number(baseUrl.includes('hg19'))
     const featureData = await myfetch(newBase)
 
     const { hits = [] } = featureData as { hits: unknown[] }
     const returnFeatures = [] as Feature[]
 
     const iter = async (scrollId: string, scroll: number) => {
-      console.log({ scrollId, scroll })
-      var scrollurl = format(
+      const scrollurl = format(
         baseUrl + 'query?scroll_id={scrollId}&size={size}&from={from}',
         { scrollId: scrollId, size: 1000, from: scroll },
       )
       const featureResults = await myfetch(scrollurl)
       const { hits = [] } = featureResults as { hits: unknown[] }
 
-      returnFeatures.push(...hits.map((f) => processFeat(f)))
+      returnFeatures.push(...hits.map((f) => processFeat(f, refName)))
       if (hits.length >= 1000) {
         await iter(scrollId, scroll + 1000)
       }
@@ -242,7 +240,7 @@ class AdapterClass extends BaseFeatureDataAdapter {
       const fetchAllResult = await myfetch(newBase + '&fetch_all=true')
       await iter(fetchAllResult._scroll_id, 0)
     } else if (hits) {
-      returnFeatures.push(...hits.map((f) => processFeat(f)))
+      returnFeatures.push(...hits.map((f) => processFeat(f, refName)))
     }
     return returnFeatures
   }
