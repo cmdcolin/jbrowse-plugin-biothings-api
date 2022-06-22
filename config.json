@@ -46,6 +46,18 @@
         "baseUrl": "https://mygene.info/v3/query?q=${ref}:${start}-${end}&size=1000&fields=all&size=1000&species=human",
         "type": "MyGeneV3Adapter"
       }
+    },
+    {
+      "type": "FeatureTrack",
+      "trackId": "myvariant_hg38",
+      "name": "MyVariant v1",
+      "assemblyNames": ["hg38"],
+      "category": ["Annotation"],
+      "adapter": {
+        "query": "query?q={ref}:{start}-{end}&size=1000&fields=all&size=1000&species=human",
+        "baseUrl": "https://myvariant.info/v1/",
+        "type": "MyVariantV1Adapter"
+      }
     }
   ]
 }
