@@ -84,7 +84,7 @@
       "assemblyNames": ["hg38"],
       "category": ["Annotation"],
       "adapter": {
-        "baseUrl": "https://mygene.info/v3/query?q=${ref}:${start}-${end}&size=1000&fields=all&size=1000&species=human",
+        "baseUrl": "https://mygene.info/v3/query?q=${ref}:${start}-${end}&size=1000&fields=all&size=1000&species=human&email=colin.diesh@gmail.com",
         "type": "MyGeneV3Adapter"
       }
     },
@@ -95,7 +95,7 @@
       "assemblyNames": ["hg19"],
       "category": ["Annotation"],
       "adapter": {
-        "query": "query?q={ref}:{start}-{end}&size=1000&fields=all&size=1000",
+        "query": "query?q={ref}:{start}-{end}&size=1000&fields=all&size=1000&email=colin.diesh@gmail.com",
         "baseUrl": "https://myvariant.info/v1/",
         "type": "MyVariantV1Adapter"
       }
@@ -107,7 +107,7 @@
       "assemblyNames": ["hg19"],
       "category": ["Annotation"],
       "adapter": {
-        "query": "query?q={ref}:{start}-{end} AND _exists_:cadd&size=1000&size=1000&fields=cadd",
+        "query": "query?q={ref}:{start}-{end} AND _exists_:cadd&size=1000&size=1000&fields=cadd&email=colin.diesh@gmail.com",
         "baseUrl": "https://myvariant.info/v1/",
         "type": "MyVariantV1Adapter"
       }
@@ -119,7 +119,7 @@
       "assemblyNames": ["hg19"],
       "category": ["Annotation"],
       "adapter": {
-        "query": "query?q={ref}:{start}-{end} AND _exists_:grasp&size=1000&size=1000&fields=grasp",
+        "query": "query?q={ref}:{start}-{end} AND _exists_:grasp&size=1000&size=1000&fields=grasp&email=colin.diesh@gmail.com",
         "baseUrl": "https://myvariant.info/v1/",
         "type": "MyVariantV1Adapter"
       }
@@ -131,7 +131,7 @@
       "assemblyNames": ["hg19"],
       "category": ["Annotation"],
       "adapter": {
-        "query": "query?q={ref}:{start}-{end} AND _exists_:exac&size=1000&size=1000&fields=exac",
+        "query": "query?q={ref}:{start}-{end} AND _exists_:exac&size=1000&size=1000&fields=exac&email=colin.diesh@gmail.com",
         "baseUrl": "https://myvariant.info/v1/",
         "type": "MyVariantV1Adapter"
       }
@@ -143,7 +143,7 @@
       "assemblyNames": ["hg19"],
       "category": ["Annotation"],
       "adapter": {
-        "query": "query?q={ref}:{start}-{end} AND _exists_:wellderly&size=1000&size=1000&fields=wellderly",
+        "query": "query?q={ref}:{start}-{end} AND _exists_:wellderly&size=1000&size=1000&fields=wellderly&email=colin.diesh@gmail.com",
         "baseUrl": "https://myvariant.info/v1/",
         "type": "MyVariantV1Adapter"
       }
@@ -155,7 +155,7 @@
       "assemblyNames": ["hg19"],
       "category": ["Annotation"],
       "adapter": {
-        "query": "query?q={ref}:{start}-{end} AND _exists_:dbsnp&size=1000&size=1000&fields=dbsnp",
+        "query": "query?q={ref}:{start}-{end} AND _exists_:dbsnp&size=1000&size=1000&fields=dbsnp&email=colin.diesh@gmail.com",
         "baseUrl": "https://myvariant.info/v1/",
         "type": "MyVariantV1Adapter"
       }
@@ -167,7 +167,7 @@
       "assemblyNames": ["hg19"],
       "category": ["Annotation"],
       "adapter": {
-        "query": "query?q={ref}:{start}-{end} AND _exists_:dbsnfp&size=1000&size=1000&fields=dbsnfp",
+        "query": "query?q={ref}:{start}-{end} AND _exists_:dbsnfp&size=1000&size=1000&fields=dbsnfp&email=colin.diesh@gmail.com",
         "baseUrl": "https://myvariant.info/v1/",
         "type": "MyVariantV1Adapter"
       }
@@ -179,7 +179,7 @@
       "assemblyNames": ["hg19"],
       "category": ["Annotation"],
       "adapter": {
-        "query": "query?q={ref}:{start}-{end} AND _exists_:clinvar&size=1000&size=1000&fields=clinvar",
+        "query": "query?q={ref}:{start}-{end} AND _exists_:clinvar&size=1000&size=1000&fields=clinvar&email=colin.diesh@gmail.com",
         "baseUrl": "https://myvariant.info/v1/",
         "type": "MyVariantV1Adapter"
       }
@@ -191,7 +191,7 @@
       "assemblyNames": ["hg19"],
       "category": ["Annotation"],
       "adapter": {
-        "query": "query?q={ref}:{start}-{end} AND _exists_:snpedia&size=1000&size=1000&fields=snpedia",
+        "query": "query?q={ref}:{start}-{end} AND _exists_:snpedia&size=1000&size=1000&fields=snpedia&email=colin.diesh@gmail.com",
         "baseUrl": "https://myvariant.info/v1/",
         "type": "MyVariantV1Adapter"
       }
@@ -203,7 +203,7 @@
       "assemblyNames": ["hg19"],
       "category": ["Annotation"],
       "adapter": {
-        "query": "query?q={ref}:{start}-{end} AND _exists_:docm&size=1000&size=1000&fields=docm",
+        "query": "query?q={ref}:{start}-{end} AND _exists_:docm&size=1000&size=1000&fields=docm&email=colin.diesh@gmail.com",
         "baseUrl": "https://myvariant.info/v1/",
         "type": "MyVariantV1Adapter"
       }
@@ -215,7 +215,7 @@
       "assemblyNames": ["hg19"],
       "category": ["Annotation"],
       "adapter": {
-        "query": "query?q={ref}:{start}-{end} AND _exists_:emv&size=1000&size=1000&fields=emv",
+        "query": "query?q={ref}:{start}-{end} AND _exists_:emv&size=1000&size=1000&fields=emv&email=colin.diesh@gmail.com",
         "baseUrl": "https://myvariant.info/v1/",
         "type": "MyVariantV1Adapter"
       }
@@ -227,7 +227,7 @@
       "assemblyNames": ["hg19"],
       "category": ["Annotation"],
       "adapter": {
-        "query": "query?q={ref}:{start}-{end} AND _exists_:snpeff&size=1000&size=1000&fields=snpeff",
+        "query": "query?q={ref}:{start}-{end} AND _exists_:snpeff&size=1000&size=1000&fields=snpeff&email=colin.diesh@gmail.com",
         "baseUrl": "https://myvariant.info/v1/",
         "type": "MyVariantV1Adapter"
       }
@@ -239,7 +239,7 @@
       "assemblyNames": ["hg19"],
       "category": ["Annotation"],
       "adapter": {
-        "query": "query?q={ref}:{start}-{end} AND _exists_:mutdb&size=1000&size=1000&fields=mutdb",
+        "query": "query?q={ref}:{start}-{end} AND _exists_:mutdb&size=1000&size=1000&fields=mutdb&email=colin.diesh@gmail.com",
         "baseUrl": "https://myvariant.info/v1/",
         "type": "MyVariantV1Adapter"
       }
@@ -251,7 +251,7 @@
       "assemblyNames": ["hg19"],
       "category": ["Annotation"],
       "adapter": {
-        "query": "query?q={ref}:{start}-{end} AND _exists_:cosmic&size=1000&size=1000&fields=cosmic",
+        "query": "query?q={ref}:{start}-{end} AND _exists_:cosmic&size=1000&size=1000&fields=cosmic&email=colin.diesh@gmail.com",
         "baseUrl": "https://myvariant.info/v1/",
         "type": "MyVariantV1Adapter"
       }
@@ -263,7 +263,7 @@
       "assemblyNames": ["hg19"],
       "category": ["Annotation"],
       "adapter": {
-        "query": "query?q={ref}:{start}-{end} AND _exists_:gwassnps&size=1000&size=1000&fields=gwassnps",
+        "query": "query?q={ref}:{start}-{end} AND _exists_:gwassnps&size=1000&size=1000&fields=gwassnps&email=colin.diesh@gmail.com",
         "baseUrl": "https://myvariant.info/v1/",
         "type": "MyVariantV1Adapter",
         "chunkSize": 1000000
@@ -276,7 +276,7 @@
       "assemblyNames": ["hg19"],
       "category": ["Annotation"],
       "adapter": {
-        "query": "query?q={ref}:{start}-{end} AND _exists_:evs&size=1000&size=1000&fields=gwassnps",
+        "query": "query?q={ref}:{start}-{end} AND _exists_:evs&size=1000&size=1000&fields=gwassnps&email=colin.diesh@gmail.com",
         "baseUrl": "https://myvariant.info/v1/",
         "type": "MyVariantV1Adapter"
       }
