@@ -84,7 +84,18 @@
       "assemblyNames": ["hg38"],
       "category": ["Annotation"],
       "adapter": {
-        "baseUrl": "https://mygene.info/v3/query?q=${ref}:${start}-${end}&size=1000&fields=all&size=1000&species=human&email=colin.diesh@gmail.com",
+        "baseUrl": "https://mygene.info/v3/query?q={ref}:{start}-{end}&size=1000&fields=all&size=1000&species=human&email=colin.diesh@gmail.com",
+        "type": "MyGeneV3Adapter"
+      }
+    },
+    {
+      "type": "FeatureTrack",
+      "trackId": "mygene_hg19",
+      "name": "MyGene v3",
+      "assemblyNames": ["hg19"],
+      "category": ["Annotation"],
+      "adapter": {
+        "baseUrl": "https://mygene.info/v3/query?q=hg19.{ref}:{start}-{end}&fields=all&size=1000&email=colin.diesh@gmail.com",
         "type": "MyGeneV3Adapter"
       }
     },
