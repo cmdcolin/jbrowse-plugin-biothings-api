@@ -1,3 +1,8 @@
+# v1.0.4
+
+- Add myvariant.info and mygene compat
+- Use new formatter string for templates in the URL
+
 # v1.0.3
 
 - Make the baseUrl default empty string so that the valid hg19 config isn't filtered out by the config system
