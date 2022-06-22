@@ -6,11 +6,8 @@ import {
 import format from 'string-template'
 import AdapterType from '@jbrowse/core/pluggableElementTypes/AdapterType'
 import { Region } from '@jbrowse/core/util/types'
-import { intersection2 } from '@jbrowse/core/util/range'
 import { ObservableCreate } from '@jbrowse/core/util/rxjs'
 import SimpleFeature, { Feature } from '@jbrowse/core/util/simpleFeature'
-import AbortablePromiseCache from 'abortable-promise-cache'
-import QuickLRU from '@jbrowse/core/util/QuickLRU'
 import { ConfigurationSchema } from '@jbrowse/core/configuration'
 import PluginManager from '@jbrowse/core/PluginManager'
 
@@ -24,113 +21,112 @@ async function myfetch(url: string) {
 
 function processFeat(f: any, refName: string) {
   const start = +f._id.match(/chr.*:g.([0-9]+)/)[1]
+
   const feature = new SimpleFeature({
-    id: f._id,
-    data: {
-      refName,
-      start: start - 1,
-      end: start,
-      id: f._id,
-    },
+    uniqueId: f._id,
+    start: start - 1,
+    end: start,
+    name: f._id,
+    refName,
   })
 
-  function process(str: string, data: any, plus?: any) {
-    if (!data) return
+  // function process(str: string, data: any, plus?: any) {
+  //   if (!data) return
 
-    if (str.match(/snpeff/)) {
-      if (Array.isArray(data.ann)) {
-        data.ann.forEach((fm: any, i: number) => {
-          process(str + '_' + i, fm, i)
-        })
-        return
-      } else if (data.ann) {
-        delete data.ann.cds
-        delete data.ann.cdna
-        delete data.ann.protein
-      } else {
-        delete data.cds // sub-sub-objects, not super informative
-        delete data.cdna
-        delete data.protein
-      }
-    }
-    if (str.match(/cadd/)) {
-      if (data.encode) {
-        process(str + '_encode', data.encode)
-      }
-      delete data.encode
-    }
-    if (str.match(/clinvar/)) {
-      process(str + '_hgvs', data.hgvs)
-      delete data.hgvs
-      if (Array.isArray(data.rcv))
-        data.rcv.forEach((elt: any, i: number) => {
-          process(str + '_rcv' + i, elt)
-        })
-      else process(str + '_rcv', data.rcv)
-      delete data.rcv
-    }
-    if (str.match(/dbnsfp/)) {
-      if (data.fathmm) {
-        for (const i in data.fathmm.score) {
-          if (data.fathmm.score[i] === null) data.fathmm.score[i] = ''
-        }
-      }
-      if (data.provean) {
-        for (const j in data.provean.score) {
-          if (data.provean.score[j] === null) data.provean.score[j] = ''
-        }
-      }
-      if (data.sift) {
-        for (const k in data.sift.score) {
-          if (data.sift.score[k] === null) data.sift.score[k] = ''
-        }
-      }
-    }
-    if (str.match(/grasp/)) {
-      if (Array.isArray(data.publication)) {
-        data.publication.forEach((fm: any, iter: number) => {
-          process(str + '_publication' + iter, fm)
-        })
-      }
-      delete data.publication
-    }
-    // @ts-ignore
-    feature.data[str + '_attrs' + (plus || '')] = {}
-    const valkeys = Object.keys(data).filter((key) => {
-      return typeof data[key] !== 'object'
-    })
+  //   if (str.match(/snpeff/)) {
+  //     if (Array.isArray(data.ann)) {
+  //       data.ann.forEach((fm: any, i: number) => {
+  //         process(str + '_' + i, fm, i)
+  //       })
+  //       return
+  //     } else if (data.ann) {
+  //       delete data.ann.cds
+  //       delete data.ann.cdna
+  //       delete data.ann.protein
+  //     } else {
+  //       delete data.cds // sub-sub-objects, not super informative
+  //       delete data.cdna
+  //       delete data.protein
+  //     }
+  //   }
+  //   if (str.match(/cadd/)) {
+  //     if (data.encode) {
+  //       process(str + '_encode', data.encode)
+  //     }
+  //     delete data.encode
+  //   }
+  //   if (str.match(/clinvar/)) {
+  //     process(str + '_hgvs', data.hgvs)
+  //     delete data.hgvs
+  //     if (Array.isArray(data.rcv))
+  //       data.rcv.forEach((elt: any, i: number) => {
+  //         process(str + '_rcv' + i, elt)
+  //       })
+  //     else process(str + '_rcv', data.rcv)
+  //     delete data.rcv
+  //   }
+  //   if (str.match(/dbnsfp/)) {
+  //     if (data.fathmm) {
+  //       for (const i in data.fathmm.score) {
+  //         if (data.fathmm.score[i] === null) data.fathmm.score[i] = ''
+  //       }
+  //     }
+  //     if (data.provean) {
+  //       for (const j in data.provean.score) {
+  //         if (data.provean.score[j] === null) data.provean.score[j] = ''
+  //       }
+  //     }
+  //     if (data.sift) {
+  //       for (const k in data.sift.score) {
+  //         if (data.sift.score[k] === null) data.sift.score[k] = ''
+  //       }
+  //     }
+  //   }
+  //   if (str.match(/grasp/)) {
+  //     if (Array.isArray(data.publication)) {
+  //       data.publication.forEach((fm: any, iter: number) => {
+  //         process(str + '_publication' + iter, fm)
+  //       })
+  //     }
+  //     delete data.publication
+  //   }
+  //   // @ts-ignore
+  //   feature.data[str + '_attrs' + (plus || '')] = {}
+  //   const valkeys = Object.keys(data).filter((key) => {
+  //     return typeof data[key] !== 'object'
+  //   })
 
-    const objkeys = Object.keys(data).filter((key) => {
-      return typeof data[key] === 'object' && key !== 'gene'
-    })
+  //   const objkeys = Object.keys(data).filter((key) => {
+  //     return typeof data[key] === 'object' && key !== 'gene'
+  //   })
 
-    valkeys.forEach((key) => {
-      // @ts-ignore
-      feature.data[str + '_attrs' + (plus || '')][key] = data[key]
-    })
-    objkeys.forEach((key) => {
-      // @ts-ignore
-      feature.data[str + '_' + key + (plus || '')] = data[key]
-    })
-  }
+  //   valkeys.forEach((key) => {
+  //     // @ts-ignore
+  //     feature.data[str + '_attrs' + (plus || '')][key] = data[key]
+  //   })
+  //   objkeys.forEach((key) => {
+  //     // @ts-ignore
+  //     feature.data[str + '_' + key + (plus || '')] = data[key]
+  //   })
+  // }
 
-  process('cadd', f.cadd)
-  process('cosmic', f.cosmic)
-  process('dbnsfp', f.dbnsfp)
-  process('dbsnp', f.dbsnp)
-  process('evs', f.evs)
-  process('exac', f.exac)
-  process('mutdb', f.mutdb)
-  process('wellderly', f.wellderly)
-  process('snpedia', f.snpedia)
-  process('snpeff', f.snpeff)
-  process('vcf', f.vcf)
-  process('grasp', f.grasp)
-  process('gwassnps', f.gwassnps)
-  process('docm', f.docm)
-  process('emv', f.emv)
-  process('clinvar', f.clinvar)
-  process('uniprot', f.uniprot)
+  // process('cadd', f.cadd)
+  // process('cosmic', f.cosmic)
+  // process('dbnsfp', f.dbnsfp)
+  // process('dbsnp', f.dbsnp)
+  // process('evs', f.evs)
+  // process('exac', f.exac)
+  // process('mutdb', f.mutdb)
+  // process('wellderly', f.wellderly)
+  // process('snpedia', f.snpedia)
+  // process('snpeff', f.snpeff)
+  // process('vcf', f.vcf)
+  // process('grasp', f.grasp)
+  // process('gwassnps', f.gwassnps)
+  // process('docm', f.docm)
+  // process('emv', f.emv)
+  // process('clinvar', f.clinvar)
+  // process('uniprot', f.uniprot)
 
   return feature
 }
@@ -146,23 +142,11 @@ export const configSchema = ConfigurationSchema(
       type: 'string',
       defaultValue: '',
     },
-    chunkSize: {
-      type: 'number',
-      defaultValue: 1000,
-    },
   },
   { explicitlyTyped: true },
 )
 
 class AdapterClass extends BaseFeatureDataAdapter {
-  private featureCache = new AbortablePromiseCache({
-    cache: new QuickLRU({ maxSize: 100 }),
-    fill: async (args) => {
-      // @ts-ignore
-      return this.readChunk(args)
-    },
-  })
-
   public async getRefNames(_: BaseOptions = {}) {
     return []
   }
@@ -170,37 +154,17 @@ class AdapterClass extends BaseFeatureDataAdapter {
   public getFeatures(query: Region, opts: BaseOptions = {}) {
     const baseUrl = this.getConf('baseUrl')
     const queryQ = this.getConf('query')
-    const chunkSize = this.getConf('chunkSize')
-    const { start: qs, end: qe, refName, assemblyName } = query
+    const { start: qs, end: qe, refName } = query
     return ObservableCreate<Feature>(async (observer) => {
-      const s = qs - (qs % chunkSize)
-      const e = qe + (chunkSize - (qe % chunkSize))
-      const chunks = []
-      for (let start = s; start < e; start += chunkSize) {
-        chunks.push({
-          refName,
-          start,
-          end: start + chunkSize,
-          assemblyName,
-          baseUrl,
-          query: queryQ,
-        })
-      }
-      await Promise.all(
-        chunks.map(async (chunk) => {
-          const key = `${chunk.assemblyName},${chunk.refName},${chunk.start},${chunk.end}`
-          const signal = opts.signal
-          const features = (await this.featureCache.get(
-            key,
-            chunk,
-            signal,
-          )) as Feature[]
-          const ret = features.filter((f) =>
-            intersection2(f.get('start'), f.get('end'), qs, qe),
-          )
-          ret.forEach((f) => observer.next(f))
-        }),
-      )
+      const features = (await this.readChunk({
+        start: qs,
+        end: qe,
+        refName,
+        baseUrl,
+        query: queryQ,
+      })) as Feature[]
+      // console.log(JSON.stringify(features))
+      features.forEach((f) => observer.next(f))
 
       observer.complete()
     }, opts.signal)
@@ -242,6 +206,7 @@ class AdapterClass extends BaseFeatureDataAdapter {
     } else if (hits) {
       returnFeatures.push(...hits.map((f) => processFeat(f, refName)))
     }
+
     return returnFeatures
   }
 
