@@ -1,3 +1,7 @@
+# v1.0.5
+
+- Update distconfig
+
 # v1.0.4
 
 - Add myvariant.info and mygene compat
