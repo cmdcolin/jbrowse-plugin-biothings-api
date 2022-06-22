@@ -165,7 +165,7 @@ class AdapterClass extends BaseFeatureDataAdapter {
     const baseUrl = this.getConf('baseUrl')
     const queryQ = this.getConf('query')
     return ObservableCreate<Feature>(async (observer) => {
-      const chunkSize = 100000
+      const chunkSize = 1000
       const s = query.start - (query.start % chunkSize)
       const e = query.end + (chunkSize - (query.end % chunkSize))
       const chunks = []
@@ -180,22 +180,24 @@ class AdapterClass extends BaseFeatureDataAdapter {
         })
       }
       await Promise.all(
-        chunks.map((chunk) => {
+        chunks.map(async (chunk) => {
           const key = `${chunk.assemblyName},${chunk.refName},${chunk.start},${chunk.end}`
           const signal = opts.signal
-          return this.featureCache
-            .get(key, chunk, signal)
-            .then((features: Feature[]) =>
-              features.forEach((feature) => {
-                if (
-                  feature &&
-                  !(feature.get('start') > query.end) &&
-                  feature.get('end') >= query.start
-                ) {
-                  observer.next(feature)
-                }
-              }),
-            )
+          const features = (await this.featureCache.get(
+            key,
+            chunk,
+            signal,
+          )) as Feature[]
+          console.log({ features })
+          features.forEach((feature) => {
+            if (
+              feature &&
+              !(feature.get('start') > query.end) &&
+              feature.get('end') >= query.start
+            ) {
+              observer.next(feature)
+            }
+          })
         }),
       )
 
@@ -212,47 +214,37 @@ class AdapterClass extends BaseFeatureDataAdapter {
   }) {
     const { start, end, refName, baseUrl, query } = chunk
     const ref = refName.startsWith('chr') ? refName : `chr${refName}`
-    console.log({ baseUrl, ref, start, end })
     const newBase = format(baseUrl + query, { ref, start, end })
 
     //const hg19 = Number(baseUrl.includes('hg19'))
     const featureData = await myfetch(newBase)
 
-    console.log({ featureData })
-    var feats = featureData.hits || []
+    const { hits = [] } = featureData as { hits: unknown[] }
     const returnFeatures = [] as Feature[]
 
     const iter = async (scrollId: string, scroll: number) => {
+      console.log({ scrollId, scroll })
       var scrollurl = format(
         baseUrl + 'query?scroll_id={scrollId}&size={size}&from={from}',
         { scrollId: scrollId, size: 1000, from: scroll },
       )
       const featureResults = await myfetch(scrollurl)
-      var feathits = featureResults.hits || []
-      feathits.forEach((f: unknown) => {
-        var feat = processFeat(f)
-        returnFeatures.push(feat)
-      })
-      console.log({ feats })
-      if (feats.length >= 1000) {
-        /* do nothing */
-      } else {
-        iter(scrollId, scroll + 1000)
+      const { hits = [] } = featureResults as { hits: unknown[] }
+
+      returnFeatures.push(...hits.map((f) => processFeat(f)))
+      if (hits.length >= 1000) {
+        await iter(scrollId, scroll + 1000)
       }
     }
 
-    if (feats.length >= 1000) {
+    if (hits.length >= 1000) {
       // setup scroll query
       const fetchAllResult = await myfetch(newBase + '&fetch_all=true')
-      iter(fetchAllResult._scroll_id, 0)
-    } else if (feats) {
-      feats.forEach((f: any) => {
-        var feat = processFeat(f)
-        returnFeatures.push(feat)
-      })
-      return returnFeatures
+      await iter(fetchAllResult._scroll_id, 0)
+    } else if (hits) {
+      returnFeatures.push(...hits.map((f) => processFeat(f)))
     }
-    return []
+    return returnFeatures
   }
 
   public freeResources(/* { region } */) {}

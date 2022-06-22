@@ -13,6 +13,7 @@ import {
   ConfigurationSchema,
 } from '@jbrowse/core/configuration'
 import PluginManager from '@jbrowse/core/PluginManager'
+import format from 'string-template'
 
 export const configSchema = ConfigurationSchema(
   'MyGeneV3Adapter',
@@ -178,13 +179,6 @@ class AdapterClass extends BaseFeatureDataAdapter {
     }, opts.signal)
   }
 
-  private interpolate(str: string, params: Record<string, string | number>) {
-    const names = Object.keys(params)
-    const vals = Object.values(params)
-    // eslint-disable-next-line @typescript-eslint/no-implied-eval,no-new-func
-    return new Function(...names, `return \`${str}\`;`)(...vals)
-  }
-
   private async readChunk(chunk: {
     start: number
     end: number
@@ -193,7 +187,7 @@ class AdapterClass extends BaseFeatureDataAdapter {
   }) {
     const { start, end, refName, baseUrl } = chunk
     const ref = refName.startsWith('chr') ? refName : `chr${refName}`
-    const url = this.interpolate(baseUrl, { ref, start, end })
+    const url = format(baseUrl, { ref, start, end })
 
     const hg19 = Number(baseUrl.includes('hg19'))
     const response = await fetch(url)
