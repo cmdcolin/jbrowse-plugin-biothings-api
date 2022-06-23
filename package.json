@@ -1,6 +1,6 @@
 {
   "name": "jbrowse-plugin-biothings",
-  "version": "1.0.4",
+  "version": "1.0.5",
   "description": "JBrowse 2 biothings API plugin",
   "keywords": [
     "jbrowse",
