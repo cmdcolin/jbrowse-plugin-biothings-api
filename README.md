@@ -7,7 +7,10 @@
 
 #### Demo
 
-https://s3.amazonaws.com/jbrowse.org/code/jb2/master/index.html?config=https%3A%2F%2Funpkg.com%2Fjbrowse-plugin-biothings%2Fdist%2Fconfig.json&session=share-AFbXiVTg5n&password=9hshE
+
+MyGene.info+MyVariant.info hg19
+
+https://jbrowse.org/code/jb2/main/index.html?config=https%3A%2F%2Funpkg.com%2Fjbrowse-plugin-biothings%2Fdist%2Fconfig.json&session=share-NgDOuAfwWy&password=ZPZgJ
 
 #### Using in JBrowse 2
 
