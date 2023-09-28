@@ -6,7 +6,7 @@ import MyGeneAdapterF from './MyGeneAdapter'
 import MyVariantAdapterF from './MyVariantAdapter'
 
 export default class extends Plugin {
-  name = 'MyGeneAdapter'
+  name = 'Biothings'
   version = version
 
   install(pluginManager: PluginManager) {
