@@ -76,19 +76,19 @@ function processFeat(f: any, refName: string) {
     }
     // @ts-ignore
     feature.data[str + '_attrs' + (plus || '')] = {}
-    const valkeys = Object.keys(data).filter((key) => {
+    const valkeys = Object.keys(data).filter(key => {
       return typeof data[key] !== 'object'
     })
 
-    const objkeys = Object.keys(data).filter((key) => {
+    const objkeys = Object.keys(data).filter(key => {
       return typeof data[key] === 'object' && key !== 'gene'
     })
 
-    valkeys.forEach((key) => {
+    valkeys.forEach(key => {
       // @ts-ignore
       feature.data[str + '_attrs' + (plus || '')][key] = data[key]
     })
-    objkeys.forEach((key) => {
+    objkeys.forEach(key => {
       // @ts-ignore
       feature.data[str + '_' + key + (plus || '')] = data[key]
     })
@@ -139,7 +139,7 @@ class AdapterClass extends BaseFeatureDataAdapter {
     const baseUrl = this.getConf('baseUrl')
     const queryQ = this.getConf('query')
     const { start: qs, end: qe, refName } = query
-    return ObservableCreate<Feature>(async (observer) => {
+    return ObservableCreate<Feature>(async observer => {
       const features = (await this.readChunk({
         start: qs,
         end: qe,
@@ -148,7 +148,7 @@ class AdapterClass extends BaseFeatureDataAdapter {
         query: queryQ,
       })) as Feature[]
       // console.log(JSON.stringify(features))
-      features.forEach((f) => observer.next(f))
+      features.forEach(f => observer.next(f))
 
       observer.complete()
     }, opts.signal)
@@ -177,7 +177,7 @@ class AdapterClass extends BaseFeatureDataAdapter {
       const featureResults = await myfetch(scrollurl)
       const { hits = [] } = featureResults as { hits: unknown[] }
 
-      returnFeatures.push(...hits.map((f) => processFeat(f, refName)))
+      returnFeatures.push(...hits.map(f => processFeat(f, refName)))
       if (hits.length >= 1000) {
         await iter(scrollId, scroll + 1000)
       }
@@ -188,7 +188,7 @@ class AdapterClass extends BaseFeatureDataAdapter {
       const fetchAllResult = await myfetch(newBase + '&fetch_all=true')
       await iter(fetchAllResult._scroll_id, 0)
     } else if (hits) {
-      returnFeatures.push(...hits.map((f) => processFeat(f, refName)))
+      returnFeatures.push(...hits.map(f => processFeat(f, refName)))
     }
 
     return returnFeatures

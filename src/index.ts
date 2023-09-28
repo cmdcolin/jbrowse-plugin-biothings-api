@@ -1,4 +1,3 @@
-/* eslint-disable @typescript-eslint/camelcase */
 import PluginManager from '@jbrowse/core/PluginManager'
 import Plugin from '@jbrowse/core/Plugin'
 
