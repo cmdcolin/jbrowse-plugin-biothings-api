@@ -29,110 +29,125 @@ export const configSchema = ConfigurationSchema(
 // translate thickStart/thickEnd to utr's
 // adapted from BigBedAdapter for ucsc thickStart/thickEnd
 // eslint-disable-next-line @typescript-eslint/no-explicit-any
-export function cdsStartEndProcessor(feature: any) {
+export function cdsStartEndProcessor(feature: {
+  thickStart: number
+  thickEnd: number
+  refName: string
+  strand: number
+  subfeatures: { start: number; end: number }[]
+}) {
   // split the blocks into UTR, CDS, and exons
-  const { thickStart, thickEnd, strand, subfeatures: children } = feature
+  const { thickStart, thickEnd, refName, strand, subfeatures } = feature
 
   if (!thickStart && !thickEnd) {
     return feature
   }
 
-  const blocks = children
-    ? children.sort(
-        (a: { start: number }, b: { start: number }) => a.start - b.start,
-      )
+  const blocks = subfeatures
+    ? subfeatures.sort((a, b) => a.start - b.start)
     : []
 
-  // eslint-disable-next-line @typescript-eslint/no-explicit-any
-  const newChildren: Record<string, any> = []
-  blocks.forEach((block: { start: number; end: number }) => {
-    const { start, end } = block
-    if (thickStart >= end) {
-      // left-side UTR
-      const prime = strand > 0 ? 'five' : 'three'
-      newChildren.push({
-        type: `${prime}_prime_UTR`,
-        start,
-        end,
-      })
-    } else if (thickStart > start && thickStart < end && thickEnd >= end) {
-      // UTR | CDS
-      const prime = strand > 0 ? 'five' : 'three'
-      newChildren.push(
-        {
+  const newChildren = blocks
+    .map(({ start, end }) => {
+      if (thickStart >= end) {
+        // left-side UTR
+        const prime = strand > 0 ? 'five' : 'three'
+        return {
           type: `${prime}_prime_UTR`,
           start,
-          end: thickStart,
-        },
-        {
+          end,
+        }
+      } else if (thickStart > start && thickStart < end && thickEnd >= end) {
+        // UTR | CDS
+        const prime = strand > 0 ? 'five' : 'three'
+        return [
+          {
+            type: `${prime}_prime_UTR`,
+            start,
+            end: thickStart,
+          },
+          {
+            type: 'CDS',
+            start: thickStart,
+            end,
+            refName,
+          },
+        ]
+      } else if (thickStart <= start && thickEnd >= end) {
+        // CDS
+        return {
           type: 'CDS',
-          start: thickStart,
-          end,
-        },
-      )
-    } else if (thickStart <= start && thickEnd >= end) {
-      // CDS
-      newChildren.push({
-        type: 'CDS',
-        start,
-        end,
-      })
-    } else if (thickStart > start && thickStart < end && thickEnd < end) {
-      // UTR | CDS | UTR
-      const leftPrime = strand > 0 ? 'five' : 'three'
-      const rightPrime = strand > 0 ? 'three' : 'five'
-      newChildren.push(
-        {
-          type: `${leftPrime}_prime_UTR`,
           start,
-          end: thickStart,
-        },
-        {
-          type: `CDS`,
-          start: thickStart,
-          end: thickEnd,
-        },
-        {
-          type: `${rightPrime}_prime_UTR`,
-          start: thickEnd,
           end,
-        },
-      )
-    } else if (thickStart <= start && thickEnd > start && thickEnd < end) {
-      // CDS | UTR
-      const prime = strand > 0 ? 'three' : 'five'
-      newChildren.push(
-        {
-          type: `CDS`,
-          start,
-          end: thickEnd,
-        },
-        {
+        }
+      } else if (thickStart > start && thickStart < end && thickEnd < end) {
+        // UTR | CDS | UTR
+        const leftPrime = strand > 0 ? 'five' : 'three'
+        const rightPrime = strand > 0 ? 'three' : 'five'
+        return [
+          {
+            type: `${leftPrime}_prime_UTR`,
+            start,
+            end: thickStart,
+          },
+          {
+            type: `CDS`,
+            start: thickStart,
+            end: thickEnd,
+          },
+          {
+            type: `${rightPrime}_prime_UTR`,
+            start: thickEnd,
+            end,
+          },
+        ]
+      } else if (thickStart <= start && thickEnd > start && thickEnd < end) {
+        // CDS | UTR
+        const prime = strand > 0 ? 'three' : 'five'
+        return [
+          {
+            type: `CDS`,
+            start,
+            end: thickEnd,
+          },
+          {
+            type: `${prime}_prime_UTR`,
+            start: thickEnd,
+            end,
+          },
+        ]
+      } else if (thickEnd <= start) {
+        // right-side UTR
+        const prime = strand > 0 ? 'three' : 'five'
+        return {
           type: `${prime}_prime_UTR`,
-          start: thickEnd,
+          start,
           end,
-        },
-      )
-    } else if (thickEnd <= start) {
-      // right-side UTR
-      const prime = strand > 0 ? 'three' : 'five'
-      newChildren.push({
-        type: `${prime}_prime_UTR`,
-        start,
-        end,
-      })
-    }
-  })
-  return { ...feature, subfeatures: newChildren, type: 'mRNA' }
+        }
+      }
+      return undefined
+    })
+    .filter(f => !!f)
+    .flat()
+  return {
+    ...feature,
+    subfeatures: newChildren.map(r => ({ ...r, refName })),
+    type: 'mRNA',
+  }
+}
+
+interface Chunk {
+  refName: string
+  start: number
+  end: number
+  assemblyName: string
+  baseUrl: any
 }
 
 class AdapterClass extends BaseFeatureDataAdapter {
-  private featureCache = new AbortablePromiseCache({
+  private featureCache = new AbortablePromiseCache<Chunk, Feature[]>({
     cache: new QuickLRU({ maxSize: 100 }),
-    fill: async (args) => {
-      // @ts-ignore
-      return this.readChunk(args)
-    },
+    fill: args => this.readChunk(args),
   })
 
   public async getRefNames(_: BaseOptions = {}) {
@@ -141,7 +156,7 @@ class AdapterClass extends BaseFeatureDataAdapter {
 
   public getFeatures(query: Region, opts: BaseOptions = {}) {
     const baseUrl = readConfObject(this.config, 'baseUrl')
-    return ObservableCreate<Feature>(async (observer) => {
+    return ObservableCreate<Feature>(async observer => {
       const chunkSize = 100000
       const s = query.start - (query.start % chunkSize)
       const e = query.end + (chunkSize - (query.end % chunkSize))
@@ -156,22 +171,19 @@ class AdapterClass extends BaseFeatureDataAdapter {
         })
       }
       await Promise.all(
-        chunks.map((chunk) => {
+        chunks.map(async chunk => {
           const key = `${chunk.assemblyName},${chunk.refName},${chunk.start},${chunk.end}`
           const signal = opts.signal
-          return this.featureCache
-            .get(key, chunk, signal)
-            .then((features: Feature[]) =>
-              features.forEach((feature) => {
-                if (
-                  feature &&
-                  !(feature.get('start') > query.end) &&
-                  feature.get('end') >= query.start
-                ) {
-                  observer.next(feature)
-                }
-              }),
-            )
+          const features = await this.featureCache.get(key, chunk, signal)
+          features.forEach(feature => {
+            if (
+              feature &&
+              !(feature.get('start') > query.end) &&
+              feature.get('end') >= query.start
+            ) {
+              observer.next(feature)
+            }
+          })
         }),
       )
 
@@ -197,8 +209,8 @@ class AdapterClass extends BaseFeatureDataAdapter {
       )
     }
     const featureData = await response.json()
-    // @ts-ignore
-    return featureData.hits.map((feature) => {
+    // @ts-expect-error
+    return featureData.hits.map(feature => {
       const {
         genomic_pos,
         genomic_pos_hg19,
@@ -212,7 +224,7 @@ class AdapterClass extends BaseFeatureDataAdapter {
 
       let genomicPos = [genomic_pos, genomic_pos_hg19][hg19]
       if (Array.isArray(genomicPos)) {
-        genomicPos = genomicPos.find((pos) => {
+        genomicPos = genomicPos.find(pos => {
           return refName.replace('chr', '') === pos.chr
         })
       }
@@ -248,15 +260,15 @@ class AdapterClass extends BaseFeatureDataAdapter {
       }
 
       if (transcriptData) {
-        // @ts-ignore
-        transcriptData = transcriptData.filter((transcript) => {
+        // @ts-expect-error
+        transcriptData = transcriptData.filter(transcript => {
           return feature.map_location?.startsWith(transcript.chr)
         })
       }
 
       if (transcriptData && transcriptData.length) {
         const transcripts = transcriptData
-          // @ts-ignore
+          // @ts-expect-error
           .map((transcript, index) => {
             return {
               start: transcript.txstart,
@@ -266,8 +278,8 @@ class AdapterClass extends BaseFeatureDataAdapter {
               thickStart: transcript.cdsstart,
               thickEnd: transcript.cdsend,
               refName: genomicPos.chr,
-              // @ts-ignore
-              subfeatures: transcript.position.map((pos) => ({
+              // @ts-expect-error
+              subfeatures: transcript.position.map(pos => ({
                 start: pos[0],
                 end: pos[1],
                 strand: transcript.strand,
@@ -275,8 +287,8 @@ class AdapterClass extends BaseFeatureDataAdapter {
               })),
             }
           })
-          // @ts-ignore
-          .filter((t) => {
+          // @ts-expect-error
+          .filter(t => {
             // another weird filter to avoid transcripts that are outside the
             // range of the genomic pos. the +/-1000 added for ATAD3C, SKI2, MEGF6
             return (
@@ -284,8 +296,8 @@ class AdapterClass extends BaseFeatureDataAdapter {
               t.end <= genomicPos.end + 2000
             )
           })
-          // @ts-ignore
-          .map((feat) => {
+          // @ts-expect-error
+          .map(feat => {
             return feature.type_of_gene === 'protein-coding'
               ? cdsStartEndProcessor(feat)
               : feat
@@ -295,10 +307,10 @@ class AdapterClass extends BaseFeatureDataAdapter {
         // if subfeatures go outside of the bounds of the parent feature so
         // this is needed
         const [min, max] = [
-          // @ts-ignore
-          Math.min(...[genomicPos.start, ...transcripts.map((t) => t.start)]),
-          // @ts-ignore
-          Math.max(...[genomicPos.end, ...transcripts.map((t) => t.end)]),
+          // @ts-expect-error
+          Math.min(...[genomicPos.start, ...transcripts.map(t => t.start)]),
+          // @ts-expect-error
+          Math.max(...[genomicPos.end, ...transcripts.map(t => t.end)]),
         ]
 
         return new SimpleFeature({
